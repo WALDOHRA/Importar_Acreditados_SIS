@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: importa-acreditados-sis
+  labels:
+    app: importa-acreditados-sis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: importa-acreditados-sis
+  template:
+    metadata:
+      labels:
+        app: importa-acreditados-sis
+    spec:
+      containers:
+      - name: flask-app
+        # Image points to the GitHub Container Registry (GHCR)
+        image: ghcr.io/waldohra/importa-acreditados-sis:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 51423
+        
+        # Resource limits for reliability
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+
+        # Liveness & Readiness Probes (using the index page)
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 51423
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 51423
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        
+        # Temp directories for uploads/extractions
+        volumeMounts:
+        - name: app-temp-data
+          mountPath: /app/uploads
+        - name: app-temp-extract
+          mountPath: /app/temp_extract
+
+      volumes:
+      - name: app-temp-data
+        emptyDir: {}
+      - name: app-temp-extract
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: importa-acreditados-sis-service
+spec:
+  # Using LoadBalancer to get an IP from MetalLB (10.100.6.100 - 10.100.6.110)
+  type: LoadBalancer
+  selector:
+    app: importa-acreditados-sis
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 51423

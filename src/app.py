@@ -71,55 +71,62 @@ def process_bulk(cursor, rows):
     cursor.executemany(sql_insert_temp, rows)
 
 def finalize_import(cursor):
-    """Merges data from temp table to final table and cleans up."""
-    # 1. Update existing records
-    sql_update = """
-        UPDATE T
-        SET
-            T.AfiliacionDisa = S.AfiliacionDisa,
-            T.AfiliacionTipoFormato = S.AfiliacionTipoFormato,
-            T.AfiliacionNroFormato = S.AfiliacionNroFormato,
-            T.AfiliacionNroIntegrante = S.AfiliacionNroIntegrante,
-            T.DocumentoTipo = S.DocumentoTipo,
-            T.CodigoEstablAdscripcion = S.CodigoEstablAdscripcion,
-            T.AfiliacionFecha = S.AfiliacionFecha,
-            T.Paterno = S.Paterno,
-            T.Materno = S.Materno,
-            T.Pnombre = S.Pnombre,
-            T.Onombres = S.Onombres,
-            T.Genero = S.Genero,
-            T.Fnacimiento = S.Fnacimiento,
-            T.IdDistritoDomicilio = S.IdDistritoDomicilio,
-            T.Estado = S.Estado,
-            T.Fbaja = S.Fbaja,
-            T.DocumentoNumero = S.DocumentoNumero,
-            T.MotivoBaja = S.MotivoBaja
-        FROM SisFiliaciones T
-        INNER JOIN #SisFiliacionesTemp S ON T.idSiasis = S.idSiasis AND T.Codigo = S.Codigo
-    """
-    cursor.execute(sql_update)
-
-    # 2. Insert new records
-    sql_insert = """
-        INSERT INTO SisFiliaciones (
-            idSiasis, Codigo, AfiliacionDisa, AfiliacionTipoFormato, AfiliacionNroFormato,
-            AfiliacionNroIntegrante, DocumentoTipo, CodigoEstablAdscripcion,
-            AfiliacionFecha, Paterno, Materno, Pnombre, Onombres,
-            Genero, Fnacimiento, IdDistritoDomicilio, Estado, Fbaja,
-            DocumentoNumero, MotivoBaja
+    """Merges data from temp table to final table and cleans up using T-SQL MERGE with deduplication."""
+    sql_merge = """
+        WITH DedupedSource AS (
+            SELECT *, ROW_NUMBER() OVER (PARTITION BY idSiasis, Codigo ORDER BY (SELECT NULL)) as rn
+            FROM #SisFiliacionesTemp
         )
-        SELECT
-            idSiasis, Codigo, AfiliacionDisa, AfiliacionTipoFormato, AfiliacionNroFormato,
-            AfiliacionNroIntegrante, DocumentoTipo, CodigoEstablAdscripcion,
-            AfiliacionFecha, Paterno, Materno, Pnombre, Onombres,
-            Genero, Fnacimiento, IdDistritoDomicilio, Estado, Fbaja,
-            DocumentoNumero, MotivoBaja
-        FROM #SisFiliacionesTemp S
-        WHERE NOT EXISTS (
-            SELECT 1 FROM SisFiliaciones T WHERE T.idSiasis = S.idSiasis AND T.Codigo = S.Codigo
-        )
+        MERGE INTO SisFiliaciones AS T
+        USING (SELECT * FROM DedupedSource WHERE rn = 1) AS S
+        ON T.idSiasis = S.idSiasis AND T.Codigo = S.Codigo
+        WHEN MATCHED AND EXISTS (
+            SELECT S.AfiliacionDisa, S.AfiliacionTipoFormato, S.AfiliacionNroFormato, S.AfiliacionNroIntegrante,
+                   S.DocumentoTipo, S.CodigoEstablAdscripcion, S.AfiliacionFecha, S.Paterno, S.Materno,
+                   S.Pnombre, S.Onombres, S.Genero, S.Fnacimiento, S.IdDistritoDomicilio, S.Estado,
+                   S.Fbaja, S.DocumentoNumero, S.MotivoBaja
+            EXCEPT
+            SELECT T.AfiliacionDisa, T.AfiliacionTipoFormato, T.AfiliacionNroFormato, T.AfiliacionNroIntegrante,
+                   T.DocumentoTipo, T.CodigoEstablAdscripcion, T.AfiliacionFecha, T.Paterno, T.Materno,
+                   T.Pnombre, T.Onombres, T.Genero, T.Fnacimiento, T.IdDistritoDomicilio, T.Estado,
+                   T.Fbaja, T.DocumentoNumero, T.MotivoBaja
+        ) THEN
+            UPDATE SET
+                T.AfiliacionDisa = S.AfiliacionDisa,
+                T.AfiliacionTipoFormato = S.AfiliacionTipoFormato,
+                T.AfiliacionNroFormato = S.AfiliacionNroFormato,
+                T.AfiliacionNroIntegrante = S.AfiliacionNroIntegrante,
+                T.DocumentoTipo = S.DocumentoTipo,
+                T.CodigoEstablAdscripcion = S.CodigoEstablAdscripcion,
+                T.AfiliacionFecha = S.AfiliacionFecha,
+                T.Paterno = S.Paterno,
+                T.Materno = S.Materno,
+                T.Pnombre = S.Pnombre,
+                T.Onombres = S.Onombres,
+                T.Genero = S.Genero,
+                T.Fnacimiento = S.Fnacimiento,
+                T.IdDistritoDomicilio = S.IdDistritoDomicilio,
+                T.Estado = S.Estado,
+                T.Fbaja = S.Fbaja,
+                T.DocumentoNumero = S.DocumentoNumero,
+                T.MotivoBaja = S.MotivoBaja
+        WHEN NOT MATCHED BY TARGET THEN
+            INSERT (
+                idSiasis, Codigo, AfiliacionDisa, AfiliacionTipoFormato, AfiliacionNroFormato,
+                AfiliacionNroIntegrante, DocumentoTipo, CodigoEstablAdscripcion,
+                AfiliacionFecha, Paterno, Materno, Pnombre, Onombres,
+                Genero, Fnacimiento, IdDistritoDomicilio, Estado, Fbaja,
+                DocumentoNumero, MotivoBaja
+            )
+            VALUES (
+                S.idSiasis, S.Codigo, S.AfiliacionDisa, S.AfiliacionTipoFormato, S.AfiliacionNroFormato,
+                S.AfiliacionNroIntegrante, S.DocumentoTipo, S.CodigoEstablAdscripcion,
+                S.AfiliacionFecha, S.Paterno, S.Materno, S.Pnombre, S.Onombres,
+                S.Genero, S.Fnacimiento, S.IdDistritoDomicilio, S.Estado, S.Fbaja,
+                S.DocumentoNumero, S.MotivoBaja
+            );
     """
-    cursor.execute(sql_insert)
+    cursor.execute(sql_merge)
 
     # 3. Cleanup
     cursor.execute("DROP TABLE #SisFiliacionesTemp")
@@ -307,4 +314,4 @@ def import_data():
     return Response(stream_with_context(generate()), mimetype='text/event-stream')
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=44321)
+    app.run(host='0.0.0.0', port=51423)

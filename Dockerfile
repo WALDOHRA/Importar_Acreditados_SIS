@@ -51,6 +51,6 @@ RUN useradd -u 1000 -m appuser && \
     chown -R appuser:appuser /app
 USER appuser
 
-EXPOSE 44321
+EXPOSE 51423
 
 CMD ["python", "app.py"]

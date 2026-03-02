@@ -24,7 +24,7 @@ docker-compose up --build
 **Qué sucede:**
 1.  Se construye la imagen de la aplicación Python optimizada.
 ### Paso 2: Ejecución e Importación
-1. Accede a la aplicación en `http://localhost:44321`.
+1. Accede a la aplicación en `http://localhost:51423`.
 2. Ingresa los datos de tu servidor **MSSQL 2012** (IP, Puerto, Usuario, Password).
 3. Sube el archivo `.zip` con los acreditados.
 4. La aplicación creará una tabla temporal `#` en el servidor destino, realizará la carga y luego el merge final.

@@ -5,7 +5,7 @@ services:
       dockerfile: Dockerfile
     container_name: sigh-import-app
     ports:
-      - "44321:44321"
+      - "51423:51423"
     restart: unless-stopped
     deploy:
       resources:
