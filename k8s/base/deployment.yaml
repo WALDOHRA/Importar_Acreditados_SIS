@@ -63,11 +63,12 @@ kind: Service
 metadata:
   name: importa-acreditados-sis-service
 spec:
-  # Using LoadBalancer to get an IP from MetalLB (10.100.6.100 - 10.100.6.110)
-  type: LoadBalancer
+  # Using NodePort to use the server's physical IP (10.100.6.37)
+  type: NodePort
   selector:
     app: importa-acreditados-sis
   ports:
   - protocol: TCP
     port: 80
     targetPort: 51423
+    nodePort: 30123 # You will access via http://10.100.6.37:30123
