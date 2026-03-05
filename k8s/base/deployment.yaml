@@ -17,7 +17,7 @@ spec:
       containers:
       - name: flask-app
         # Image points to the GitHub Container Registry (GHCR)
-        image: ghcr.io/waldohra/importa-acreditados-sis:latest
+        image: ghcr.io/waldohra/importar_acreditados_sis:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 51423

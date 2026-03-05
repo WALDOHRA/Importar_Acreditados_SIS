@@ -8,7 +8,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: waldohra/importa-acreditados-sis
+  IMAGE_NAME: waldohra/importar_acreditados_sis
 
 jobs:
   build-and-push-image:
