@@ -10,3 +10,5 @@ temp_extract/
 uploads/
 *.log
 GITOPS_IMPLEMENTATION.txt
+servidorK8UbuntuServer.txt
+configuracionDockerDeploy.txt
