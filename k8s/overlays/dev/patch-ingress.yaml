@@ -1,0 +1,7 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: importa-sis-ingress
+spec:
+  rules:
+  - host: dev.importa-sis.hospital.hra.gob.pe
