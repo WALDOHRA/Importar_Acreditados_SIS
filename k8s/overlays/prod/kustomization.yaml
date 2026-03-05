@@ -3,5 +3,5 @@ kind: Kustomization
 resources:
   - ../../base
 
-namespace: prod
+namespace: importador-acreditados-prod
 # Production no tiene prefijos, usa los nombres nativos

@@ -9,7 +9,7 @@ resources:
 namePrefix: dev-
 
 # Automáticamente desplegará todo en el namespace "dev" en lugar del default
-namespace: dev
+namespace: importador-acreditados-dev
 
 # Aquí aplicamos un "parche" para cambiar la URL solo para desarrollo
 patches:
