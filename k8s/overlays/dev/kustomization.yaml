@@ -18,3 +18,6 @@ images:
 - name: ghcr.io/WALDOHRA/Importar_Acreditados_SIS
   newName: ghcr.io/WALDOHRA/Importar_Acreditados_SIS
   newTag: sha-2596356
+- name: ghcr.io/waldohra/importar_acreditados_sis
+  newName: ghcr.io/waldohra/importar_acreditados_sis
+  newTag: sha-60587f3
