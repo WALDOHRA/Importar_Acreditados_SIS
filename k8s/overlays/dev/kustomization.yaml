@@ -3,7 +3,7 @@ kind: Kustomization
 
 # Tomamos toda la plantilla de la carpeta base
 resources:
-  - ../../base
+- ../../base
 
 # Automáticamente a todos los recursos les agregará este prefijo (ej. dev-importa-acreditados-sis)
 namePrefix: dev-
@@ -13,4 +13,8 @@ namespace: dev
 
 # Aquí aplicamos un "parche" para cambiar la URL solo para desarrollo
 patches:
-  - path: patch-ingress.yaml
+- path: patch-ingress.yaml
+images:
+- name: ghcr.io/WALDOHRA/Importar_Acreditados_SIS
+  newName: ghcr.io/WALDOHRA/Importar_Acreditados_SIS
+  newTag: sha-2596356
