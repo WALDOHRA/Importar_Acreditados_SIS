@@ -20,4 +20,4 @@ images:
   newTag: sha-2596356
 - name: ghcr.io/waldohra/importar_acreditados_sis
   newName: ghcr.io/waldohra/importar_acreditados_sis
-  newTag: sha-a9f1502
+  newTag: sha-bcd0a80
